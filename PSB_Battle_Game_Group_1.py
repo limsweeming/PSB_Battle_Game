@@ -20,6 +20,10 @@ class Player:
             choice = input(f"{self.name}, select your class (1. Warrior 2. Tanker): ")
             if choice in ["1", "2"]:
                 self.player_class = "Warrior" if choice == "1" else "Tanker"
+                if self.player_class == "Warrior":
+                    self.defense = 10  # Lower defense for warrior
+                else:
+                    self.defense = 30  # Higher defense for tanker
                 break
             else:
                 print("Invalid choice. Please choose 1 for Warrior or 2 for Tanker.")
@@ -27,17 +31,19 @@ class Player:
     def inflict_damage(self, opponent):
         if opponent.health > 0:
             if self.player_class == "Warrior":
-                points = random.randint(10, 20)
+                damage = random.randint(15, 30) - opponent.defense // 2
             else:
-                points = random.randint(5, 15)
-            opponent.health -= points
+                damage = random.randint(5, 15) - opponent.defense // 3
+            damage = max(damage, 0)  # Ensure that damage can't be negative
+            opponent.health -= damage
             self.coins += 1  # Increase coins whenever damage is inflicted
+            print(f"{self.name} inflicts {damage} damage on {opponent.name}.")
 
     def gain_experience(self):
         if self.player_class == "Warrior":
-            self.experience += random.randint(1, 10)
+            self.experience += random.randint(5, 10)
         else:
-            self.experience += random.randint(5, 15)
+            self.experience += random.randint(3, 8)
         if self.experience >= 100:
             self.level_up()
 
@@ -53,7 +59,10 @@ class AIPlayer(Player):
     def __init__(self):
         super().__init__(f"AI{random.randint(0, 99)}", "AI Team")
         self.player_class = random.choice(["Warrior", "Tanker"])
-        self.defense = 50  # Added defense attribute
+        if self.player_class == "Warrior":
+            self.defense = 10
+        else:
+            self.defense = 30  # Higher defense for AI tanker
 
 def main():
     players = []
@@ -73,18 +82,16 @@ def main():
 
 def gameplay(players, ai_players):
     while any(player.health > 0 for player in players) and any(ai_player.health > 0 for ai_player in ai_players):
-        # Before the start of each turn
+        # Display the current game status
         print("\nTurn Start")
         print("-" * 90)
         print(f"{'Player Name':<20} | {'Team':<10} | {'Class':<10} | {'Health':<10} | {'Defense':<10} | {'Experience':<15} | {'Level':<10} | {'Coins':<10}")
         print("-" * 90)
         for player in players:
             print(player)
-        print("-" * 90)
         for ai_player in ai_players:
             print(ai_player)
         print("-" * 90)
-        print("\n")
 
         # Players' turns
         for player in players:
@@ -107,14 +114,12 @@ def gameplay(players, ai_players):
             for player in leveled_up_players:
                 print(f"{player.name} (Level {player.level})")
 
-        # After the end of each turn
         print("\nTurn End")
         print("-" * 90)
         print(f"{'Player Name':<20} | {'Team':<10} | {'Class':<10} | {'Health':<10} | {'Defense':<10} | {'Experience':<15} | {'Level':<10} | {'Coins':<10}")
         print("-" * 90)
         for player in players:
             print(player)
-        print("-" * 90)
         for ai_player in ai_players:
             print(ai_player)
         print("-" * 90)
